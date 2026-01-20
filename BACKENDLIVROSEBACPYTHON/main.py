@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from typing import Optional
 app = FastAPI()
 
-dict = {}
+meus_livrozinhos = {}
 
 class Livro(BaseModel):
     nome_livro: str
@@ -27,12 +27,10 @@ class Livro(BaseModel):
 
 @app.get("/livros")
 def get_livros():
-    if not dict:
+    if not meus_livrozinhos:
         return {"message": "Nenhum livro cadastrado"}
     else:
-        return {"Livros": dict}
-
-
+        return {"Livros": meus_livrozinhos}
 # id do livro
 # nome do livro
 # autor do livro
@@ -40,27 +38,31 @@ def get_livros():
 
 @app.post("/adiciona")
 def post_livros(id_livro: int, livro: Livro):
-    if id_livro in dict:
+    if id_livro in meus_livrozinhos:
         raise HTTPException(status_code=400, detail="Livro já cadastrado")
     else:
-        dict[id_livro] = livro.dict()
+        meus_livrozinhos[id_livro] = livro.dict()
         return {"message": "Livro adicionado com sucesso!"}
     
 
 @app.put("/atualiza/{id_livro}")
 def put_livros(id_livro: int, livro: Livro):
-    meu_livro = dict.get(id_livro)
+    meu_livro = meus_livrozinhos.get(id_livro)
     if not meu_livro:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     else:
-        meu_livro[id_livro] = livro.dict()
+        # Eu jogo essa informação dentro do meu antigo dicionário (que é o meus_livrozinhos)
+        # E NÃOooooo dentro da REFERENCIA do antigo dicionário
+        # Antigo dicionário != Referencia do antigo dicionário
+        meus_livrozinhos[id_livro] = livro.dict() 
+        
         
         return {"message": "Livro atualizado com sucesso!"}
     
 @app.delete("/deletar/{id_livro}")
 def delet_livro(id_livro: int):
-    if id_livro not in dict:
+    if id_livro not in meus_livrozinhos:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     else:
-        del dict[id_livro]
+        del meus_livrozinhos[id_livro]
         return {"message": "Livro deletado com sucesso!"}

@@ -14,10 +14,16 @@
 #CRUD - Create, Read, Update, Delete
 
 from fastapi import FastAPI, HTTPException
-
+from pydantic import BaseModel
+from typing import Optional
 app = FastAPI()
 
 dict = {}
+
+class Livro(BaseModel):
+    nome_livro: str
+    autor_livro: str
+    ano_livro: int
 
 @app.get("/livros")
 def get_livros():
@@ -33,26 +39,21 @@ def get_livros():
 # ano de publicação
 
 @app.post("/adiciona")
-def post_livros(id_livro: int, nome_livro: str, autor_livro: str, ano_livro: int):
+def post_livros(id_livro: int, livro: Livro):
     if id_livro in dict:
         raise HTTPException(status_code=400, detail="Livro já cadastrado")
     else:
-        dict[id_livro] = {"nome": nome_livro, "autor": autor_livro, "ano": ano_livro}
+        dict[id_livro] = livro.dict()
         return {"message": "Livro adicionado com sucesso!"}
     
 
 @app.put("/atualiza/{id_livro}")
-def put_livros(id_livro: int, nome_livro: str, autor_livro: str, ano_livro: int):
+def put_livros(id_livro: int, livro: Livro):
     meu_livro = dict.get(id_livro)
     if not meu_livro:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     else:
-        if nome_livro: # Validando se o campo exite
-            meu_livro["nome"] = nome_livro # Atualizando o campo com a nova informação
-        if autor_livro:
-            meu_livro["autor"] = autor_livro
-        if ano_livro:
-            meu_livro["ano"] = ano_livro
+        meu_livro[id_livro] = livro.dict()
         
         return {"message": "Livro atualizado com sucesso!"}
     
@@ -62,5 +63,4 @@ def delet_livro(id_livro: int):
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     else:
         del dict[id_livro]
-        
         return {"message": "Livro deletado com sucesso!"}
